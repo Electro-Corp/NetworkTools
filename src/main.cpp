@@ -19,21 +19,39 @@
 */
 #include <iostream>
 #include <vector>
+#include <cstring>
 
+// Network tool
+#include "network.hpp"
 // Include all modules
 #include "module.hpp" // base
 #include "modules/module_dump.hpp" // dump network traffic
 
+//
+// Variables for main
+// 
+
 // Moudles
 std::vector<NetworkTools::Module> modules;
+// Network engine
+NetworkTools::NetworkEngine networkEngine;
+// Variables
+std::string card;
+
+//
+// Functions for main
+//
 
 // Parse args
 int parseArguments(int args, char* argv[]);
-
+// Get variable in command line
+std::string getParam(char* command, int args, char* argv[]);
 // Print help
 void printHelp();
 
 int main(int args, char* argv[]){
+    // List all devices
+    networkEngine.printDeviceNames();
     // Create Program list
     modules.push_back(Modules::Dump());
 
@@ -42,28 +60,58 @@ int main(int args, char* argv[]){
         exit(-1);
     }
 
+    // Select card
+    if(card.empty()){
+        networkEngine.selectDefaultDevice();
+    }else{
+        if(!networkEngine.selectDevice(card)){
+            std::cout << "ERROR: Device: " << card << " not found!\n";
+            exit(-1);
+        }
+    }
+
+    std::cout << "Using device: " << networkEngine.getSelectedDevice()->name << "\n";
+
     return 0;
 }
 
 // Parse args
 int parseArguments(int args, char* argv[]){
-    if(args < 2) return -1;
-
-    // Go through each command
-    for(int i = 1; i < args; i++){
-        
+    if(args < 3){
+        std::cout << "ERROR: No module selected!\n";
+        return -1;
     }
+
+    card = getParam("-device", args, argv);
 
     return 0;
 }
 
+// Get variable in command line
+std::string getParam(char* command, int args, char* argv[]){
+    for(int i = 0; i < args; i++){
+        if(strcmp(command, argv[i]) == 0){
+            if(i + 1 < args){
+                return std::string{argv[i + 1]};
+            }else{
+                std::cout << "ERROR: " << argv[i] << " requires a parameter!\n";
+                exit(-1);
+            }
+        }
+    }
+    return "";
+}
 
 // Print help
 void printHelp(){
+    std::cout << "================================================\n";
     std::cout << "NetworkTools - Copyright (C) 2026 Electro-Corp\n";
     std::cout << "Usage: ./networkTools [module] [optional]\n";
+    std::cout << "================================================\n";
     std::cout << "Modules: \n";
-    for(auto& mod : modules) std::cout << "- " << mod.getModuleName() << "\n";
+    for(auto& mod : modules) std::cout << "> " << mod.getModuleName() << "\n";
+    std::cout << "================================================\n";
     std::cout << "Options: \n";
-    std::cout << "-card     Select Specfic Network Card\n";
+    std::cout << "-device [deviceName]  Select Specfic Device\n";
+    std::cout << "================================================\n";
 }

@@ -16,6 +16,7 @@ add_executable(networkTools
     # Individual modules
     src/modules/module_dump.cpp
     # Main
+    src/network.cpp
     src/main.cpp
 )
 
@@ -25,10 +26,11 @@ target_include_directories(networkTools PRIVATE
 )
 
 # Link libpcap
-target_link_libraries(networkTools PRIVATE
+target_link_libraries(networkTools PRIVATE 
     ${PCAP_LIBRARIES}
 )
 
 target_compile_options(networkTools PRIVATE
     ${PCAP_CFLAGS_OTHER}
+    -g
 )

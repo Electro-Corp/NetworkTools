@@ -1,6 +1,6 @@
 /*
     NetworkTools - Network Analysis Tool
-    module.hpp - Abstract header for analysis tools
+    network.hpp - Header for network engine
 
     Copyright (C) 2026 Electro-Corp
 
@@ -19,20 +19,37 @@
 */
 #pragma once
 
-#include "network.hpp"
+#include <iostream>
+#include <vector>
+#include <cstring>
 
-#include <string>
+#define HAVE_REMOTE
+#include <pcap.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netinet/if_ether.h>
+#include <sys/types.h>
+#include <net/ethernet.h>
 
 namespace NetworkTools{
-    class Module {
+    class NetworkEngine{
     private:
-        std::string moduleName;
+        pcap_if_t* devices;
+        pcap_if_t* device;    
+        
+        // Populate devices list
+        void populateDevices();
     public:
-        Module(std::string moduleName);
+        NetworkEngine();
+
+        void selectDefaultDevice();
+        int selectDevice(std::string name);
+
+        void printDeviceNames();
 
         // Getters
-        std::string getModuleName(){
-            return moduleName;
+        pcap_if_t* getSelectedDevice(){
+            return device;
         }
     };
 } // NetworkTools
