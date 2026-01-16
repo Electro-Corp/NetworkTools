@@ -27,7 +27,7 @@ target_include_directories(networkTools PRIVATE
 
 # Link libpcap
 target_link_libraries(networkTools PRIVATE 
-    ${PCAP_LIBRARIES}
+    ${PCAP_LIBRARIES} 
 )
 
 target_compile_options(networkTools PRIVATE

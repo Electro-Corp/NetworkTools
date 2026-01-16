@@ -1,6 +1,15 @@
 #include "network.hpp"
 
 NetworkTools::NetworkEngine::NetworkEngine(){
+    // Init PCAP for Windows
+    #ifdef __WIN32__
+    char errorBuffer[PCAP_ERRBUF_SIZE];
+    if(!LoadNpcapDlls()){
+        std::cout << "ERROR: Failed to init pcap!\n";
+        exit(-1);
+    }
+    #endif
+
     populateDevices();
 }
 
@@ -55,8 +64,13 @@ void NetworkTools::NetworkEngine::setupAndBeginPacket(NetworkTools::Module* modu
 // Populate devices list
 void NetworkTools::NetworkEngine::populateDevices(){
     char errorBuffer[PCAP_ERRBUF_SIZE];
-    if(pcap_findalldevs(&devices, errorBuffer) == -1){
-        std::cout << "ERROR: Populating devices failed: " << errorBuffer << "!\n";
+    if(pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &devices, errorBuffer) == -1){
+        std::cout << "ERROR: Populating devices failed: " << errorBuffer << "\n";
+        exit(-1);
+    }
+
+    if(!devices){
+        std::cout << "ERROR: No devices found!\n";
         exit(-1);
     }
 }

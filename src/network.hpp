@@ -26,11 +26,18 @@
 
 #define HAVE_REMOTE
 #include <pcap.h>
+#include <sys/types.h>
+
+#ifdef __linux__
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <sys/types.h>
 #include <net/ethernet.h>
+#endif
+
+#ifdef __WIN32__
+#include "misc.h"
+#endif
 
 #include "module.hpp"
 
