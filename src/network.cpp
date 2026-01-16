@@ -64,7 +64,7 @@ void NetworkTools::NetworkEngine::setupAndBeginPacket(NetworkTools::Module* modu
 // Populate devices list
 void NetworkTools::NetworkEngine::populateDevices(){
     char errorBuffer[PCAP_ERRBUF_SIZE];
-    if(pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &devices, errorBuffer) == -1){
+    if(pcap_findalldevs(&devices, errorBuffer) == -1){
         std::cout << "ERROR: Populating devices failed: " << errorBuffer << "\n";
         exit(-1);
     }

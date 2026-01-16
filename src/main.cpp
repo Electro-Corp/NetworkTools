@@ -25,6 +25,7 @@
 #include "network.hpp"
 // Include all modules
 #include "modules/module_dump.hpp" // dump network traffic
+#include "modules/module_urlgrab.hpp" // get urls from packets
 
 //
 // Variables for main
@@ -53,6 +54,7 @@ int main(int args, char* argv[]){
     networkEngine.printDeviceNames();
     // Create Program list
     modules.push_back(new Modules::Dump());
+    modules.push_back(new Modules::UrlGrabber());
 
     // Parse args
     if(parseArguments(args, argv) != 0){
