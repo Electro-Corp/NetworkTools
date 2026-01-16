@@ -26,5 +26,7 @@ namespace Modules{
     private:
     public:
         Dump();
+
+        void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet);
     };
 } // Modules

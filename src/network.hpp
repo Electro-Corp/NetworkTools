@@ -22,6 +22,7 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <functional>
 
 #define HAVE_REMOTE
 #include <pcap.h>
@@ -31,20 +32,38 @@
 #include <sys/types.h>
 #include <net/ethernet.h>
 
+#include "module.hpp"
+
 namespace NetworkTools{
+    class Module; // Forward declare 
+
     class NetworkEngine{
     private:
         pcap_if_t* devices;
-        pcap_if_t* device;    
+        pcap_if_t* device;   
+        
+        // Device to capture from
+        pcap_t* liveDev;
+        // Module to output data to
+        NetworkTools::Module* module;
         
         // Populate devices list
         void populateDevices();
+        // Packet handling
+        void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet);
+        // Static packet handling for pcap since its a C library
+        static void handlePacket(u_char*, const struct pcap_pkthdr* header, const uint8_t* packet);
     public:
         NetworkEngine();
 
+        // Setup packet handling
+        void setupAndBeginPacket(NetworkTools::Module* module, int time);
+
+        // Device selection
         void selectDefaultDevice();
         int selectDevice(std::string name);
 
+        // Print device name
         void printDeviceNames();
 
         // Getters

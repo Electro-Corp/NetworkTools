@@ -24,7 +24,6 @@
 // Network tool
 #include "network.hpp"
 // Include all modules
-#include "module.hpp" // base
 #include "modules/module_dump.hpp" // dump network traffic
 
 //
@@ -32,7 +31,7 @@
 // 
 
 // Moudles
-std::vector<NetworkTools::Module> modules;
+std::vector<NetworkTools::Module*> modules;
 // Network engine
 NetworkTools::NetworkEngine networkEngine;
 // Variables
@@ -53,8 +52,9 @@ int main(int args, char* argv[]){
     // List all devices
     networkEngine.printDeviceNames();
     // Create Program list
-    modules.push_back(Modules::Dump());
+    modules.push_back(new Modules::Dump());
 
+    // Parse args
     if(parseArguments(args, argv) != 0){
         printHelp();
         exit(-1);
@@ -70,14 +70,15 @@ int main(int args, char* argv[]){
         }
     }
 
-    std::cout << "Using device: " << networkEngine.getSelectedDevice()->name << "\n";
+    // Begin execution
+    networkEngine.setupAndBeginPacket(modules[0], 10);
 
     return 0;
 }
 
 // Parse args
 int parseArguments(int args, char* argv[]){
-    if(args < 3){
+    if(args < 2){
         std::cout << "ERROR: No module selected!\n";
         return -1;
     }
@@ -109,7 +110,7 @@ void printHelp(){
     std::cout << "Usage: ./networkTools [module] [optional]\n";
     std::cout << "================================================\n";
     std::cout << "Modules: \n";
-    for(auto& mod : modules) std::cout << "> " << mod.getModuleName() << "\n";
+    for(auto& mod : modules) std::cout << "> " << mod->getModuleName() << "\n";
     std::cout << "================================================\n";
     std::cout << "Options: \n";
     std::cout << "-device [deviceName]  Select Specfic Device\n";

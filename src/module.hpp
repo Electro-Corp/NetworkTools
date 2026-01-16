@@ -30,6 +30,8 @@ namespace NetworkTools{
     public:
         Module(std::string moduleName);
 
+        virtual void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet) = 0;
+
         // Getters
         std::string getModuleName(){
             return moduleName;
