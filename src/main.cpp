@@ -20,6 +20,7 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <csignal>
 
 // Network tool
 #include "network.hpp"
@@ -50,8 +51,15 @@ NetworkTools::Module* parseArguments(int args, char* argv[]);
 void printHelp();
 // Print warning
 void printWarning();
+// Signals
+void setupSignals();
+void segfaultSignal(int);
+void interruptSignal(int);
+// Clean up
+void cleanup();
 
 int main(int args, char* argv[]){
+    setupSignals();
     // List all devices
     networkEngine.printDeviceNames();
     // Create Program list
@@ -119,7 +127,6 @@ NetworkTools::Module* parseArguments(int args, char* argv[]){
     return module;
 }
 
-
 // Print help
 void printHelp(){
     std::cout << "================================================\n";
@@ -147,4 +154,28 @@ void printWarning(){
     std::cout << "================================================\n";
     std::cout << "\n Press [enter] to affirm...";
     getchar();
+}
+
+void setupSignals(){
+    signal(SIGINT, interruptSignal);
+    signal(SIGSEGV, segfaultSignal);
+}
+
+void segfaultSignal(int){
+    std::cout << "\nERROR: Segmentation Fault. Goodbye...\n";
+    cleanup();
+    exit(-1);
+}
+
+void interruptSignal(int){
+    std::cout << "\nInterrupted! Goodbye...\n";
+    cleanup();
+    exit(-1);
+}
+
+// Clean up!
+void cleanup(){
+    for(int i = 0; i < modules.size(); i++){
+        delete modules[i];
+    }
 }

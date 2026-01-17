@@ -16,6 +16,7 @@ add_executable(networkTools
     # Individual modules
     src/modules/module_dump.cpp
     src/modules/module_urlgrab.cpp
+    src/modules/module_repeat.cpp
     # Main
     src/network.cpp
     src/main.cpp

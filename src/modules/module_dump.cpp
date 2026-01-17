@@ -46,7 +46,7 @@ void Modules::Dump::handlePacket(const struct pcap_pkthdr* header, const uint8_t
     // Get payload size
     int ipHeadLen = (((*(packet + 14)) & 0x0F) * 4);
     int tcpHeadLen = (((*(packet + 14 + ipHeadLen + 12)) & 0xF0) >> 4) * 4;
-    int totalHeadLen = ipHeadLen + tcpHeadLen;
+    int totalHeadLen = ipHeadLen + tcpHeadLen + 14;
 
     int payloadSize = header->caplen - totalHeadLen;
 
@@ -61,13 +61,14 @@ void Modules::Dump::handlePacket(const struct pcap_pkthdr* header, const uint8_t
     
     if(dumpPackets){
         std::cout << "           Payload (size " << payloadSize << "):\n";
-        for(int i = 0; i < payloadSize; i++){
-            if(i % 15 == 0){
+        for(int i = 0, p = 0; i < payloadSize; i++){
+            if(p % 20 == 0){
                 printf("\n           ");
             }
-            if(payloadData[i])
+            if(payloadData[i]){
                 printf("%c", (char)payloadData[i]);
-            else printf("?");
+                p++;
+            }
         }
         printf("\n");
     }
