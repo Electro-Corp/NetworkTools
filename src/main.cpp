@@ -23,6 +23,8 @@
 
 // Network tool
 #include "network.hpp"
+// Argument parser
+#include "arguments.hpp"
 // Include all modules
 #include "modules/module_dump.hpp" // dump network traffic
 #include "modules/module_urlgrab.hpp" // get urls from packets
@@ -43,24 +45,28 @@ std::string card;
 //
 
 // Parse args
-int parseArguments(int args, char* argv[]);
-// Get variable in command line
-std::string getParam(char* command, int args, char* argv[]);
+NetworkTools::Module* parseArguments(int args, char* argv[]);
 // Print help
 void printHelp();
+// Print warning
+void printWarning();
 
 int main(int args, char* argv[]){
     // List all devices
     networkEngine.printDeviceNames();
     // Create Program list
-    modules.push_back(new Modules::Dump());
+    modules.push_back(new Modules::Dump(args, argv));
     modules.push_back(new Modules::UrlGrabber());
 
     // Parse args
-    if(parseArguments(args, argv) != 0){
+    NetworkTools::Module* module = parseArguments(args, argv);
+    if(!module){
         printHelp();
         exit(-1);
     }
+
+    if(!doesParamExist("-nowarning", args, argv))
+        printWarning();
 
     // Select card
     if(card.empty()){
@@ -73,37 +79,46 @@ int main(int args, char* argv[]){
     }
 
     // Begin execution
-    networkEngine.setupAndBeginPacket(modules[0], 10);
+    networkEngine.setupAndBeginPacket(module, 10);
 
     return 0;
 }
 
 // Parse args
-int parseArguments(int args, char* argv[]){
+NetworkTools::Module* parseArguments(int args, char* argv[]){
     if(args < 2){
-        std::cout << "ERROR: No module selected!\n";
-        return -1;
+        std::cout << ">>> ERROR: No module selected! <<<\n";
+        return nullptr;
     }
 
-    card = getParam("-device", args, argv);
-
-    return 0;
-}
-
-// Get variable in command line
-std::string getParam(char* command, int args, char* argv[]){
-    for(int i = 0; i < args; i++){
-        if(strcmp(command, argv[i]) == 0){
-            if(i + 1 < args){
-                return std::string{argv[i + 1]};
-            }else{
-                std::cout << "ERROR: " << argv[i] << " requires a parameter!\n";
-                exit(-1);
+    // Help stuff
+    if(strcmp(argv[1], "help") == 0){
+        if(args > 2){
+            for(int i = 0; i < modules.size(); i++){
+                if(strcmp(modules[i]->getModuleName().c_str(), argv[2]) == 0){
+                    modules[i]->printHelp();
+                    exit(-1);
+                }
             }
         }
+        std::cout << "No help found!\n";
+        exit(-1);
     }
-    return "";
+    
+    // Get module
+    NetworkTools::Module* module = nullptr;
+    for(int i = 0; i < modules.size(); i++){
+        if(strcmp(modules[i]->getModuleName().c_str(), argv[1]) == 0){
+            module = modules[i];
+        }
+    }
+
+    // Get params
+    card = getParam("-device", args, argv);
+
+    return module;
 }
+
 
 // Print help
 void printHelp(){
@@ -111,10 +126,25 @@ void printHelp(){
     std::cout << "NetworkTools - Copyright (C) 2026 Electro-Corp\n";
     std::cout << "Usage: ./networkTools [module] [optional]\n";
     std::cout << "================================================\n";
-    std::cout << "Modules: \n";
+    std::cout << "Modules (for help with a module use `help [module]`): \n";
     for(auto& mod : modules) std::cout << "> " << mod->getModuleName() << "\n";
     std::cout << "================================================\n";
     std::cout << "Options: \n";
     std::cout << "-device [deviceName]  Select Specfic Device\n";
     std::cout << "================================================\n";
+}
+
+// Print warning
+void printWarning(){
+    std::cout << "================================================\n";
+    std::cout << "NetworkTools - Copyright (C) 2026 Electro-Corp\n";
+    std::cout << "WARNING: This program may be illegal to run on \n";
+    std::cout << "         networks you don't have permission to \n";
+    std::cout << "         run it on.\n";
+    std::cout << "         I couldn't care what less what happens \n";
+    std::cout << "         to you, you are on your own!\n";
+    std::cout << "(use -nowarning to disable this message)\n";
+    std::cout << "================================================\n";
+    std::cout << "\n Press [enter] to affirm...";
+    getchar();
 }

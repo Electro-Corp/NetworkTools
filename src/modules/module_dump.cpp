@@ -1,7 +1,7 @@
 #include "module_dump.hpp"
 
-Modules::Dump::Dump() : NetworkTools::Module::Module("dump"){
-
+Modules::Dump::Dump(int args, char* argv[]) : NetworkTools::Module::Module("dump"){
+    dumpPackets = doesParamExist("-payload", args, argv);
 }
 
 void Modules::Dump::handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet){
@@ -43,10 +43,40 @@ void Modules::Dump::handlePacket(const struct pcap_pkthdr* header, const uint8_t
     memcpy(&(address.s_addr), eth_head->ether_dhost, sizeof(struct in_addr));
     std::string dHost = inet_ntoa(address);
     
-    //
+    // Get payload size
+    int ipHeadLen = (((*(packet + 14)) & 0x0F) * 4);
+    int tcpHeadLen = (((*(packet + 14 + ipHeadLen + 12)) & 0xF0) >> 4) * 4;
+    int totalHeadLen = ipHeadLen + tcpHeadLen;
+
+    int payloadSize = header->caplen - totalHeadLen;
+
+    // Copy payload
+    char payloadData[payloadSize];
+    const uint8_t* ptr = (packet + totalHeadLen);
+    memcpy(&payloadData, ptr, payloadSize);
 
     // Print out data
     std::cout << "[" << timestr << "] Packet (" << packetType << ") length: " << std::to_string(header->len) << "\n";
     std::cout << "           From " << sHost << " to " << dHost << "\n";
     
+    if(dumpPackets){
+        std::cout << "           Payload (size " << payloadSize << "):\n";
+        for(int i = 0; i < payloadSize; i++){
+            if(i % 15 == 0){
+                printf("\n           ");
+            }
+            if(payloadData[i])
+                printf("%c", (char)payloadData[i]);
+            else printf("?");
+        }
+        printf("\n");
+    }
+    
+}
+
+void Modules::Dump::printHelp(){
+    std::cout << "dump - dump all raw network traffic\n";
+    std::cout << "      > Options:\n";
+    std::cout << "        -payload     Show packet payload\n";
+    //std::cout << ""
 }

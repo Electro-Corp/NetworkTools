@@ -20,13 +20,17 @@
 #pragma once
 
 #include "../module.hpp"
+#include "../arguments.hpp"
 
 namespace Modules{
     class Dump : public NetworkTools::Module{
     private:
+        int dumpPackets = 0;
     public:
-        Dump();
+        Dump(int args, char* argv[]);
 
         void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet);
+
+        void printHelp();
     };
 } // Modules

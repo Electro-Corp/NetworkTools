@@ -1,6 +1,6 @@
 /*
     NetworkTools - Network Analysis Tool
-    module.hpp - Abstract header for analysis tools
+    arguments.hpp - header for argument parsing
 
     Copyright (C) 2026 Electro-Corp
 
@@ -19,24 +19,31 @@
 */
 #pragma once
 
-#include "network.hpp"
-
 #include <string>
+#include <cstring>
+#include <iostream>
 
-namespace NetworkTools{
-    class Module {
-    private:
-        std::string moduleName;
-    public:
-        Module(std::string moduleName);
-
-        virtual void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet) = 0;
-
-        virtual void printHelp() = 0;
-
-        // Getters
-        std::string getModuleName(){
-            return moduleName;
+// Get variable in command line
+static std::string getParam(char* command, int args, char* argv[]){
+    for(int i = 0; i < args; i++){
+        if(strcmp(command, argv[i]) == 0){
+            if(i + 1 < args){
+                return std::string{argv[i + 1]};
+            }else{
+                std::cout << "ERROR: " << argv[i] << " requires a parameter!\n";
+                exit(-1);
+            }
         }
-    };
-} // NetworkTools
+    }
+    return "";
+}
+
+// Does param exist
+static int doesParamExist(char* command, int args, char* argv[]){
+    for(int i = 0; i < args; i++){
+        if(strcmp(command, argv[i]) == 0){
+            return 1;
+        }
+    }
+    return 0;
+}

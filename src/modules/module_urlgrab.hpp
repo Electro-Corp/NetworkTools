@@ -19,14 +19,19 @@
 */
 #pragma once
 
+#include <cstdlib>
+
 #include "../module.hpp"
 
 namespace Modules{
     class UrlGrabber : public NetworkTools::Module{
     private:
+        std::vector<std::string> urls;
     public:
         UrlGrabber();
 
         void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet);
+
+        void printHelp();
     };
 } // Modules

@@ -38,7 +38,7 @@ void NetworkTools::NetworkEngine::setupAndBeginPacket(NetworkTools::Module* modu
 
     char error[PCAP_ERRBUF_SIZE];
 
-    std::cout << "Starting capture and analysis on device " << device->name << ".\n";
+    std::cout << "Starting capture and analysis (" << module->getModuleName() << ") on device " << device->name << ".\n";
     
     liveDev = pcap_open_live(
         device->name,
