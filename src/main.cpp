@@ -177,6 +177,7 @@ void interruptSignal(int){
 
 // Clean up!
 void cleanup(){
+    networkEngine.getSelectedModule()->onClose();
     for(int i = 0; i < modules.size(); i++){
         delete modules[i];
     }

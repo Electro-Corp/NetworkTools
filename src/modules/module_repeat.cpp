@@ -13,7 +13,7 @@ Modules::Repeated::Repeated(int args, char* argv[]) : NetworkTools::Module("repe
         minCommon = std::stoi(getParam("-mincommon", args, argv));
     }
 
-    std::cout << "Storing " << maxPacketStore << " packets and checking for a min of " << minCommon << " bytes.\n";
+    std::cout << "Storing " << maxPacketStore << " packets and checking for a min of " << minCommon << " common bytes.\n";
 }
 
 void Modules::Repeated::handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet){
@@ -63,6 +63,7 @@ void Modules::Repeated::addDataToStore(std::vector<uint8_t> data){
 void Modules::Repeated::checkForRepeat(){
     int checking = 0;
     std::vector<uint8_t> data;
+    // horrible nasty three nested four loops
     // First vector
     for(int i = 0; i < packetPayloadStore.size(); i++){
         // Second vector
@@ -77,7 +78,11 @@ void Modules::Repeated::checkForRepeat(){
                     data.push_back(packetPayloadStore[i][g]);
                 }else{
                     if(data.size() > minCommon){
-                        common.push_back(data);
+                        if(common.size() > 0){
+                            if(std::find(common.begin(), common.end(), data) != common.end()) common.push_back(data);
+                        } 
+                        else common.push_back(data);
+                            
                     }
                     data.clear();
                 }
@@ -86,8 +91,17 @@ void Modules::Repeated::checkForRepeat(){
     }
 }
 
+void Modules::Repeated::onClose(){
+    for(int i = 0; i < common.size(); i++){
+        FILE* fp = fopen(std::string{"repeat/" + std::to_string(i)}.c_str(), "w");
+        for(int n = 0; n < common[i].size(); n++)
+            fwrite(&common[i][n], 1, sizeof(uint8_t), fp);
+        fclose(fp);
+    }
+}
+
 void Modules::Repeated::printHelp(){
-    std::cout << "repeated - Find patterns in payload data\n";
+    std::cout << "repeated - Find patterns in payload data, and dumps to a directory\n";
     std::cout << "          > Options: \n";
     std::cout << "            -maxstore [number]    How many packets are stored to compare against\n";
     std::cout << "            -mincommon [number]   How many bytes need to be similar to be logged\n";

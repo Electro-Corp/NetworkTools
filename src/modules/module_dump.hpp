@@ -27,11 +27,15 @@ namespace Modules{
     private:
         int dumpPackets = 0, save  = 0;
         std::string saveDir;
+
+        int packetsFound = 0;
     public:
         Dump(int args, char* argv[]);
 
         void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet);
 
         void printHelp();
+
+        void onClose() override;
     };
 } // Modules

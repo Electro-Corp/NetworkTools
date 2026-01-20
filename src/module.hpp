@@ -34,6 +34,8 @@ namespace NetworkTools{
 
         virtual void printHelp() = 0;
 
+        virtual void onClose();
+
         // Getters
         std::string getModuleName(){
             return moduleName;

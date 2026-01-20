@@ -77,5 +77,10 @@ namespace NetworkTools{
         pcap_if_t* getSelectedDevice(){
             return device;
         }
+        
+        NetworkTools::Module* getSelectedModule(){
+            return module;
+        }
+        
     };
 } // NetworkTools

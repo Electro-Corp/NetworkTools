@@ -19,6 +19,8 @@
 */
 #pragma once
 
+#include <algorithm>
+
 #include "../module.hpp"
 #include "../arguments.hpp"
 
@@ -40,6 +42,8 @@ namespace Modules{
 
         // Look through last packets and see if we can find anything
         void checkForRepeat();
+
+        void onClose() override;
 
         void printHelp();
     };

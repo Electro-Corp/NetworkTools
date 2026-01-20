@@ -11,6 +11,7 @@ Modules::Dump::Dump(int args, char* argv[]) : NetworkTools::Module::Module("dump
 }
 
 void Modules::Dump::handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet){
+    packetsFound++;
     // Time stamp
     struct tm ltime;
     char timestr[16];
@@ -79,6 +80,10 @@ void Modules::Dump::handlePacket(const struct pcap_pkthdr* header, const uint8_t
         printf("\n");
     }
     
+}
+
+void Modules::Dump::onClose(){
+    std::cout << packetsFound << " packets collected.\n";
 }
 
 void Modules::Dump::printHelp(){
