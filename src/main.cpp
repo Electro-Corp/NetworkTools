@@ -29,6 +29,7 @@
 // Include all modules
 #include "modules/module_dump.hpp" // dump network traffic
 #include "modules/module_urlgrab.hpp" // get urls from packets
+#include "modules/module_repeat.hpp" // find repeated data
 
 //
 // Variables for main
@@ -65,6 +66,7 @@ int main(int args, char* argv[]){
     // Create Program list
     modules.push_back(new Modules::Dump(args, argv));
     modules.push_back(new Modules::UrlGrabber());
+    modules.push_back(new Modules::Repeated(args, argv));
 
     // Parse args
     NetworkTools::Module* module = parseArguments(args, argv);
@@ -105,7 +107,7 @@ NetworkTools::Module* parseArguments(int args, char* argv[]){
             for(int i = 0; i < modules.size(); i++){
                 if(strcmp(modules[i]->getModuleName().c_str(), argv[2]) == 0){
                     modules[i]->printHelp();
-                    exit(-1);
+                    exit(0);
                 }
             }
         }
@@ -148,7 +150,7 @@ void printWarning(){
     std::cout << "WARNING: This program may be illegal to run on \n";
     std::cout << "         networks you don't have permission to \n";
     std::cout << "         run it on.\n";
-    std::cout << "         I couldn't care what less what happens \n";
+    std::cout << "         I couldn't care less what happens \n";
     std::cout << "         to you, you are on your own!\n";
     std::cout << "(use -nowarning to disable this message)\n";
     std::cout << "================================================\n";

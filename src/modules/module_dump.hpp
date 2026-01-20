@@ -25,7 +25,8 @@
 namespace Modules{
     class Dump : public NetworkTools::Module{
     private:
-        int dumpPackets = 0;
+        int dumpPackets = 0, save  = 0;
+        std::string saveDir;
     public:
         Dump(int args, char* argv[]);
 

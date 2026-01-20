@@ -19,16 +19,27 @@
 */
 #pragma once
 
-
 #include "../module.hpp"
+#include "../arguments.hpp"
 
 namespace Modules{
     class Repeated : public NetworkTools::Module{
     private:
+        // Config vars
+        int maxPacketStore, minCommon;
+        //
+        std::vector<std::vector<uint8_t>> packetPayloadStore; // 
+        std::vector<std::vector<uint8_t>> common;
     public:
-        Repeated();
+        Repeated(int args, char* argv[]);
 
         void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet);
+
+        // Add to list (if it holds maxPacketStore remove the oldest)
+        void addDataToStore(std::vector<uint8_t> data);
+
+        // Look through last packets and see if we can find anything
+        void checkForRepeat();
 
         void printHelp();
     };
