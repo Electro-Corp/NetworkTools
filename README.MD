@@ -9,22 +9,22 @@ or
 ./networkTools help [module]
 ```
 <br>
-Included modules:
-1. `dump` - Dump all traffic through a selected device
-2. `urlgrabber` - Grab and display all URLs from packet payload
-3. `repeated` - Find patterns in payload
+Included modules: <br>
+1. `dump` - Dump all traffic through a selected device <br>
+2. `urlgrabber` - Grab and display all URLs from packet payload <br>
+3. `repeated` - Find patterns in payload <br>
 
 ## Modules 
 You can write your own modules. Take a look at `src/modules/module_dump.cpp` for a simple example. 
 
 Required functions to implement:
-```
+```c++
 void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet);
 
 void printHelp();
 ```
 Optional:
-```
+```c++
 void onClose();
 ```
 
