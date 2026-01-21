@@ -8,12 +8,23 @@ This program is for research purposes only.
 or
 ./networkTools help [module]
 ```
+<br>
+Included modules:
+1. `dump` - Dump all traffic through a selected device
+2. `urlgrabber` - Grab and display all URLs from packet payload
+3. `repeated` - Find patterns in payload
 
 ## Modules 
 You can write your own modules. Take a look at `src/modules/module_dump.cpp` for a simple example. 
-<br>
-Included modules:
-1. Dump - Dump all traffic through a selected device
-2. Urlgrabber - Grab and display all URLs from packet payload
-3. Repeated - Find patterns in payload
+
+Required functions to implement:
+```
+void handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet);
+
+void printHelp();
+```
+Optional:
+```
+void onClose();
+```
 

@@ -43,13 +43,6 @@ void Modules::Repeated::handlePacket(const struct pcap_pkthdr* header, const uin
     checkForRepeat();
 
     std::cout << "Comminalites found: " << common.size() << "\n";
-    // for(int i = 0; i < common.size(); i++){
-    //     for(int n = 0; n < common[i].size(); n++){
-    //         printf("%x ", common[i][n]);
-    //     }
-    //     printf("\n");
-    // }
-    // std::cout << "\n";
 }
 
 void Modules::Repeated::addDataToStore(std::vector<uint8_t> data){
@@ -79,7 +72,7 @@ void Modules::Repeated::checkForRepeat(){
                 }else{
                     if(data.size() > minCommon){
                         if(common.size() > 0){
-                            if(std::find(common.begin(), common.end(), data) != common.end()) common.push_back(data);
+                            if(std::find(common.begin(), common.end(), data) == common.end()) common.push_back(data);
                         } 
                         else common.push_back(data);
                             
@@ -87,6 +80,7 @@ void Modules::Repeated::checkForRepeat(){
                     data.clear();
                 }
             }
+            data.clear();
         }
     }
 }
