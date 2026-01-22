@@ -19,16 +19,32 @@
 */
 #pragma once
 
+#define REPEAT_DEBUG // comment this out to disable profiling
+
 #include <algorithm>
+#include <thread>
+#include <condition_variable>
+#include <mutex>
+#ifdef REPEAT_DEBUG
+#include <sys/time.h>
+#endif
 
 #include "../module.hpp"
 #include "../arguments.hpp"
+
 
 namespace Modules{
     class Repeated : public NetworkTools::Module{
     private:
         // Config vars
         int maxPacketStore, minCommon;
+        // Debug
+        double lastCheckTime = 0.0;
+        //
+        std::thread checkThread;
+        std::condition_variable condVar;
+        std::mutex m;
+        int added = 0, stop = 0;
         //
         std::vector<std::vector<uint8_t>> packetPayloadStore; // 
         std::vector<std::vector<uint8_t>> common;

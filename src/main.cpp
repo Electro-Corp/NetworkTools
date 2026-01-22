@@ -165,7 +165,6 @@ void setupSignals(){
 
 void segfaultSignal(int){
     std::cout << "\nERROR: Segmentation Fault. Goodbye...\n";
-    cleanup();
     exit(-1);
 }
 

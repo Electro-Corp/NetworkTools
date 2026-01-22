@@ -14,6 +14,8 @@ Modules::Repeated::Repeated(int args, char* argv[]) : NetworkTools::Module("repe
     }
 
     std::cout << "Storing " << maxPacketStore << " packets and checking for a min of " << minCommon << " common bytes.\n";
+    // Start thread
+    checkThread = std::thread(&Modules::Repeated::checkForRepeat, this);
 }
 
 void Modules::Repeated::handlePacket(const struct pcap_pkthdr* header, const uint8_t* packet){
@@ -40,58 +42,91 @@ void Modules::Repeated::handlePacket(const struct pcap_pkthdr* header, const uin
 
     addDataToStore(tmp);
 
-    checkForRepeat();
+    // Time stamp
+    struct tm ltime;
+    char timestr[16];
+    time_t local_tv_sec;
+    local_tv_sec = header->ts.tv_sec;
+    localtime_r(&local_tv_sec, &ltime);
+    strftime(timestr, sizeof timestr, "%H:%M:%S", &ltime);
 
-    std::cout << "Comminalites found: " << common.size() << "\n";
+    std::cout << "[" << timestr << "] Comminalites found: " << common.size() << ", checking repeat took " << lastCheckTime << "ms... stored " << packetPayloadStore.size() << " packets\r";
 }
 
 void Modules::Repeated::addDataToStore(std::vector<uint8_t> data){
+    added = 1;
+    // Prepare to thread
+    std::lock_guard<std::mutex> lock{m};
     packetPayloadStore.push_back(data);
     
     if(packetPayloadStore.size() > maxPacketStore){
         packetPayloadStore.erase(packetPayloadStore.begin());
     }
+    condVar.notify_one();
 }
 
 void Modules::Repeated::checkForRepeat(){
-    int checking = 0;
-    std::vector<uint8_t> data;
-    // horrible nasty three nested four loops
-    // First vector
-    for(int i = 0; i < packetPayloadStore.size(); i++){
-        // Second vector
-        for(int n = i + 1; n < packetPayloadStore.size(); n++){
-            // Check each byte
-            for(int g = 0; g < std::min(packetPayloadStore[i].size(), packetPayloadStore[n].size()); g++){
-                // See if we can
-                if(packetPayloadStore[i][g] == packetPayloadStore[n][g]) checking = 1;
-                else checking = 0;
-                // Are we currently looking
-                if(checking){
-                    data.push_back(packetPayloadStore[i][g]);
-                }else{
-                    if(data.size() > minCommon){
-                        if(common.size() > 0){
-                            if(std::find(common.begin(), common.end(), data) == common.end()) common.push_back(data);
-                        } 
-                        else common.push_back(data);
-                            
+    while(stop != 1){
+        std::unique_lock<std::mutex> lock{m};
+        condVar.wait(lock, [this]() { return added == 1 || stop == 1; });
+    // Profiling
+#ifdef REPEAT_DEBUG
+        struct timeval stop, start;
+        gettimeofday(&start, NULL);
+        double sT = (((long long)start.tv_sec) * 1000) + (start.tv_usec / 1000);
+#endif
+        int checking = 0;
+        std::vector<uint8_t> data;
+        // horrible nasty three nested four loops
+        // First vector
+        for(int i = 0; i < packetPayloadStore.size(); i++){
+            // Second vector
+            for(int n = i + 1; n < packetPayloadStore.size(); n++){
+                // Check each byte
+                for(int g = 0; g < std::min(packetPayloadStore[i].size(), packetPayloadStore[n].size()); g++){
+                    // See if we can
+                    if(packetPayloadStore[i][g] == packetPayloadStore[n][g]) checking = 1;
+                    else checking = 0;
+                    // Are we currently looking
+                    if(checking){
+                        data.push_back(packetPayloadStore[i][g]);
+                    }else{
+                        if(data.size() > minCommon){
+                            if(common.size() > 0){
+                                if(std::find(common.begin(), common.end(), data) == common.end()) common.push_back(data);
+                            } 
+                            else common.push_back(data);
+                                
+                        }
+                        data.clear();
                     }
-                    data.clear();
                 }
+                data.clear();
             }
-            data.clear();
         }
+#ifdef REPEAT_DEBUG
+        gettimeofday(&stop, NULL);
+        double eT = (((long long)stop.tv_sec) * 1000) + (stop.tv_usec / 1000);
+        lastCheckTime = eT - sT;
+#endif
+        lock.unlock();
+        added = 0;
     }
 }
 
 void Modules::Repeated::onClose(){
+    std::cout << "Closing checker thread...";
+    stop = 1;
+    checkThread.join();
+    std::cout << "done.\n";
+    std::cout << "Dumping repeated patterns...";
     for(int i = 0; i < common.size(); i++){
         FILE* fp = fopen(std::string{"repeat/" + std::to_string(i)}.c_str(), "w");
         for(int n = 0; n < common[i].size(); n++)
             fwrite(&common[i][n], 1, sizeof(uint8_t), fp);
         fclose(fp);
     }
+    std::cout << "done.\n";
 }
 
 void Modules::Repeated::printHelp(){
