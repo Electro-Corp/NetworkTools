@@ -169,7 +169,7 @@ void segfaultSignal(int){
 }
 
 void interruptSignal(int){
-    std::cout << "\nInterrupted! Goodbye...\n";
+    std::cout << "\nInterrupted! Cleanly closing, please wait...\n";
     cleanup();
     exit(-1);
 }

@@ -66,9 +66,10 @@ void Modules::Repeated::addDataToStore(std::vector<uint8_t> data){
 }
 
 void Modules::Repeated::checkForRepeat(){
-    while(stop != 1){
+    while(!stop.load()){
         std::unique_lock<std::mutex> lock{m};
-        condVar.wait(lock, [this]() { return added == 1 || stop == 1; });
+        condVar.wait(lock, [this]() { return added == 1 || stop.load(); });
+        if(stop.load()) return;
     // Profiling
 #ifdef REPEAT_DEBUG
         struct timeval stop, start;
@@ -116,8 +117,7 @@ void Modules::Repeated::checkForRepeat(){
 
 void Modules::Repeated::onClose(){
     std::cout << "Closing checker thread...";
-    stop = 1;
-    checkThread.join();
+    stop.store(true);
     std::cout << "done.\n";
     std::cout << "Dumping repeated patterns...";
     for(int i = 0; i < common.size(); i++){

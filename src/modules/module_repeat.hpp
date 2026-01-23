@@ -25,6 +25,7 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <atomic>
 #ifdef REPEAT_DEBUG
 #include <sys/time.h>
 #endif
@@ -44,7 +45,8 @@ namespace Modules{
         std::thread checkThread;
         std::condition_variable condVar;
         std::mutex m;
-        int added = 0, stop = 0;
+        int added = 0;
+        std::atomic<bool> stop;
         //
         std::vector<std::vector<uint8_t>> packetPayloadStore; // 
         std::vector<std::vector<uint8_t>> common;
